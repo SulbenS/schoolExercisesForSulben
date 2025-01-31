@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class BookController {
-  private List<Book> bookCollection = new ArrayList<Book>();
+  private List<Books> bookCollection = new ArrayList<Books>();
 
   /**
    * Constructor for the BookController class.
@@ -22,19 +22,16 @@ public class BookController {
     initializeData();
   }
 
-  record Book(int id, String title, int year, int pages) {
-  }
-
   /**
    * method to create a collection of books.
    */
   public void  initializeData(){
-    bookCollection.add(new Book(1, "The Hobbit", 1937, 310));
-    bookCollection.add(new Book(2, "The Lord of the Rings", 1954, 1178));
-    bookCollection.add(new Book(3, "The Silmarillion", 1977, 365));
-    bookCollection.add(new Book(4, "Unfinished Tales", 1980, 472));
-    bookCollection.add(new Book(5, "The Children of Húrin", 2007, 313));
-    bookCollection.add(new Book(6, "The Fall of Gondolin", 2018, 304));
+    bookCollection.add(new Books(1, "The Hobbit", 1937, 310));
+    bookCollection.add(new Books(2, "The Lord of the Rings", 1954, 1178));
+    bookCollection.add(new Books(3, "The Silmarillion", 1977, 365));
+    bookCollection.add(new Books(4, "Unfinished Tales", 1980, 472));
+    bookCollection.add(new Books(5, "The Children of Húrin", 2007, 313));
+    bookCollection.add(new Books(6, "The Fall of Gondolin", 2018, 304));
   }
 
   /**
@@ -42,7 +39,7 @@ public class BookController {
    * @return a list of books
    */
   @GetMapping("/bookCollection")
-  public List<Book> getBookCollection() {
+  public List<Books> getBookCollection() {
     return bookCollection;
   }
 
@@ -52,8 +49,8 @@ public class BookController {
    * @return a book
    */
   @GetMapping("/bookCollection/{id}")
-  public ResponseEntity<Book> getBookById(@PathVariable int id) {
-    Optional<Book> book = bookCollection.stream().filter(b -> b.id() == id).findFirst();
+  public ResponseEntity<Books> getBookById(@PathVariable int id) {
+    Optional<Books> book = bookCollection.stream().filter(b -> b.id() == id).findFirst();
     return book.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
   }
 
@@ -61,7 +58,7 @@ public class BookController {
    * method to add a book to the collection.
    */
   @PostMapping("/bookCollection")
-  public ResponseEntity<String> addBook(@RequestBody Book newBook) {
+  public ResponseEntity<String> addBook(@RequestBody Books newBook) {
     boolean bookExists = bookCollection.stream().anyMatch(book -> book.id() == newBook.id());
     if (bookExists) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: Book already exists");
