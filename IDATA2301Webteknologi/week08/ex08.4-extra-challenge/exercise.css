@@ -1,0 +1,14 @@
+/* Put your styles here according to exercise description */
+.card {
+  position: relative;
+  display: inline-block;
+}
+
+.tag {
+  position: absolute;
+  top: 70px;
+  right: -25px;
+  width: 10rem;
+  transform: rotate(45deg);
+  transform-origin: top right;
+}

@@ -1,0 +1,47 @@
+/* Put your styles here according to exercise description */
+/* set global style*/
+
+Body {
+    padding: 5px 20px;
+}
+
+h1 {
+    font-size: 48px;
+}
+
+h2 {
+    font-size: 32px;
+}
+
+p {
+    font-size: 20px;
+}
+
+#info p,h1 {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.card {
+    width: 250px;
+    height: 400px;
+    margin: 40px 20px;
+    border: dashed 1px darkgray;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0px 0px 5px 0 rgb(169, 169, 169);
+    transition: transform 0.5s ease, box-shadow 0.5s ease;
+}
+
+.card:hover {
+    transform: translate(-10px);
+    box-shadow: 10px 10px 20px 0 rgba(101, 100, 100, 0.75);
+}
+
+.highlighted {
+    box-shadow: 5px 5px 10px 0 rgba(128, 125, 125, 0.75);
+}
+
+.card-description {
+    padding: 10px 20px;
+}
