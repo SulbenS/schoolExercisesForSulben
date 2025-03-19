@@ -1,8 +1,9 @@
 package no.ntnu.crudrest;
 
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,21 +21,21 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("authors")
 public class AuthorController {
-  private Map<Integer, Author> authors;
-  private int latestId;
+  private AuthorRepository authorRepository;
+  public static final Logger logger = LoggerFactory.getLogger(AuthorController.class);
 
-  public AuthorController() {
-    initializeData();
+  public AuthorController(AuthorRepository authorRepository) {
+    this.authorRepository = authorRepository;
+    //initializeData();
   }
 
   /**
    * Initialize dummy author data for the collection.
    */
   private void initializeData() {
-  }
-
-  private int createNewId() {
-    return latestId++;
+    addAuthor(new Author(-1, "Robert", "Martin", 1952));
+    addAuthor(new Author(-1, "Erich", "Gamma", 1961));
+    addAuthor(new Author(-1, "Joshua", "Bloch", 1961));
   }
 
   /**
@@ -44,128 +45,85 @@ public class AuthorController {
    * @return List of all authors currently stored in the collection
    */
   @GetMapping
-  public Collection<Author> getAll() {
-    return authors.values();
+  public Iterable<Author> getAll() {
+
+    logger.info("Get all authors");
+
+    return this.authorRepository.findAll();
   }
+
 
   /**
    * Get a specific author.
    *
-   * @param id ID of the author to be returned
-   * @return Author with the given ID or status 404
+   * @param id ID` of the author to be returned
+   * @return author with the given ID or status 404
    */
   @GetMapping("/{id}")
   public ResponseEntity<Author> getOne(@PathVariable Integer id) {
-    ResponseEntity<Author> response;
-    Author author = findAuthorById(id);
-    if (author != null) {
-      response = new ResponseEntity<>(author, HttpStatus.OK);
+    Optional<Author> AuthorOptional = authorRepository.findById(id); // Find author by ID
+
+    if (AuthorOptional.isPresent()) {
+      logger.info("Get one author with id" + id);
+
+      return ResponseEntity.ok(AuthorOptional.get()); // Return author if found
     } else {
-      response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+      logger.info("author with id " + id + " not found");
+
+      return ResponseEntity.notFound().build(); // Return 404 if not found
     }
-    return response;
   }
 
   /**
-   * Add an author to the collection.
+   * HTTP POST endpoint for adding a new author.
    *
-   * @param author Author to be added, from HTTP response body
-   * @return 201 CREATED status on success, 400 Bad request on error
+   * @param author Data of the author to add. ID will be ignored.
+   * @return 201 Created on success and the new ID in the response body,
+   *     400 Bad request if some data is missing or incorrect
    */
-  @PostMapping
-  public ResponseEntity<String> add(@RequestBody Author author) {
-    ResponseEntity<String> response;
-
-    try {
-      addAuthorToCollection(author);
-      response = new ResponseEntity<>(HttpStatus.CREATED);
-    } catch (Exception e) {
-      response = new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-    }
-
-    return response;
-  }
-
-  private void addAuthorToCollection(Author author) throws IllegalArgumentException {
-    if (!author.isValid()) {
-      throw new IllegalArgumentException("Invalid author");
-    }
-
-    int id = createNewId();
-    authors.put(id, new Author(id, author.firstName(), author.lastName(), author.birthYear()));
+  @PostMapping()
+  public ResponseEntity<Author> addAuthor(@RequestBody Author author) {
+    Author savedAuthor = authorRepository.save(author);
+    logger.info("Added new author:" + savedAuthor);
+    return ResponseEntity.status(HttpStatus.CREATED).body(savedAuthor);
   }
 
   /**
-   * Delete an author from the collection.
+   * Delete author author from the collection.
    *
    * @param id ID of the author to delete
    * @return 200 OK on success, 404 Not found on error
    */
   @DeleteMapping("/{id}")
-  public ResponseEntity<String> delete(@PathVariable int id) {
-    ResponseEntity<String> response;
-    if (removeAuthorFromCollection(id)) {
-      response = new ResponseEntity<>(HttpStatus.OK);
-    } else {
-      response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+  public ResponseEntity<Void> deleteAuthor(@PathVariable Integer id) {
+    if (authorRepository.existsById(id)) {
+      authorRepository.deleteById(id);
+      logger.info("Deleted author with ID: " + id);
+      return ResponseEntity.noContent().build();
     }
-    return response;
+    return ResponseEntity.notFound().build();
   }
 
   /**
-   * Try to remove an author from the collection.
+   * Update author in the collection.
    *
-   * @param id ID of the author to remove
-   * @return True when author with given ID was found and removed, false otherwise
-   */
-  private boolean removeAuthorFromCollection(int id) {
-    Author removedAuthor = authors.remove(id);
-    return removedAuthor != null;
-  }
-
-  /**
-   * Update an author in the repository.
-   *
-   * @param id     ID of the author to update, from the URL
-   * @param author New author data to store, from request body
-   * @return 200 OK on success, 400 Bad request on error
+   * @param id          ID of the author to update
+   *                    (must match the ID in the JSON request body)
+   * @param updatedAuthor New data for the author
+   * @return 200 OK and the updated author on success, 404 Not found if the author was not found
    */
   @PutMapping("/{id}")
-  public ResponseEntity<String> update(@PathVariable int id, @RequestBody Author author) {
-    ResponseEntity<String> response;
-    try {
-      updateAuthor(id, author);
-      response = new ResponseEntity<>(HttpStatus.OK);
-    } catch (IllegalArgumentException e) {
-      response = new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-    }
-
-    return response;
-  }
-
-  private void updateAuthor(int id, Author author) throws IllegalArgumentException {
-    Author existingAuthor = findAuthorById(id);
-    if (existingAuthor == null) {
-      throw new IllegalArgumentException("No author with id " + id + " found");
-    }
-    if (author == null || !author.isValid()) {
-      throw new IllegalArgumentException("Wrong data in request body");
-    }
-    if (author.id() != id) {
-      throw new IllegalArgumentException(
-          "Author ID in the URL does not match the ID in the response body");
-    }
-
-    authors.put(id, author);
-  }
-
-  /**
-   * Search through the author collection, find the author by given ID.
-   *
-   * @param id Author ID
-   * @return Author or null if not found
-   */
-  private Author findAuthorById(Integer id) {
-    return authors.get(id);
+  public ResponseEntity<Author> updateAuthor(@PathVariable Integer id, @RequestBody Author updatedAuthor) {
+    return authorRepository.findById(id)
+        .map(existingAuthor -> {
+          existingAuthor.setId(updatedAuthor.getId());
+          existingAuthor.setFirstName(updatedAuthor.getFirstName());
+          existingAuthor.setLastName(updatedAuthor.getLastName());
+          existingAuthor.setBirthYear(updatedAuthor.getBirthYear());
+          authorRepository.save(existingAuthor);
+          logger.info("Updated author with ID: " + id);
+          return ResponseEntity.ok(existingAuthor);
+        })
+        .orElseGet(() -> ResponseEntity.notFound().build());
   }
 }

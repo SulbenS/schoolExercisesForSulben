@@ -1,12 +1,8 @@
 package no.ntnu.crudrest;
 
-import org.springframework.web.bind.annotation.*;
-import java.util.List;
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,22 +21,21 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/books")
 public class BookController {
-  private Map<Integer, Book> books;
-  private int latestId;
-  private final BookDAO bookDAO = new BookDAO();
+  private BookRepository bookRepository;
+  public static final Logger logger = LoggerFactory.getLogger(BookController.class);
 
-  public BookController() {
-    initializeData();
+  public BookController(BookRepository bookRepository) {
+    this.bookRepository = bookRepository;
+    //initializeData();
   }
 
   /**
    * Initialize dummy book data for the collection.
    */
   private void initializeData() {
-  }
-
-  private int createNewId() {
-    return latestId++;
+    addBook(new Book(-1, "Effective Java", 2008, 346));
+    addBook(new Book(-1, "Clean Code", 2008, 464));
+    addBook(new Book(-1, "Design Patterns", 1994, 395));
   }
 
   /**
@@ -50,9 +45,13 @@ public class BookController {
    * @return List of all books currently stored in the collection
    */
   @GetMapping
-  public Collection<Book> getAll() {
-    return bookDAO.getAll();
+  public Iterable<Book> getAll() {
+
+    logger.info("Get all books");
+
+    return this.bookRepository.findAll();
   }
+
 
   /**
    * Get a specific book.
@@ -60,19 +59,20 @@ public class BookController {
    * @param id ID` of the book to be returned
    * @return Book with the given ID or status 404
    */
-  /*
   @GetMapping("/{id}")
   public ResponseEntity<Book> getOne(@PathVariable Integer id) {
-    ResponseEntity<Book> response;
-    Book book = findBookById(id);
-    if (book != null) {
-      response = new ResponseEntity<>(book, HttpStatus.OK);
+    Optional<Book> bookOptional = bookRepository.findById(id); // Find book by ID
+
+    if (bookOptional.isPresent()) {
+      logger.info("Get one book with id" + id);
+
+      return ResponseEntity.ok(bookOptional.get()); // Return book if found
     } else {
-      response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+      logger.info("Book with id " + id + " not found");
+
+      return ResponseEntity.notFound().build(); // Return 404 if not found
     }
-    return response;
   }
-  */
 
   /**
    * HTTP POST endpoint for adding a new book.
@@ -81,21 +81,12 @@ public class BookController {
    * @return 201 Created on success and the new ID in the response body,
    *     400 Bad request if some data is missing or incorrect
    */
-  /*
   @PostMapping()
-  ResponseEntity<String> add(@RequestBody Book book) {
-    ResponseEntity<String> response;
-
-    try {
-      int id = addBookToCollection(book);
-      response = new ResponseEntity<>("" + id, HttpStatus.CREATED);
-    } catch (IllegalArgumentException e) {
-      response = new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-    }
-
-    return response;
+  public ResponseEntity<Book> addBook(@RequestBody Book book) {
+    Book savedBook = bookRepository.save(book);
+    logger.info("Added new book:" + savedBook);
+    return ResponseEntity.status(HttpStatus.CREATED).body(savedBook);
   }
-  */
 
   /**
    * Delete a book from the collection.
@@ -103,108 +94,36 @@ public class BookController {
    * @param id ID of the book to delete
    * @return 200 OK on success, 404 Not found on error
    */
-  /*
   @DeleteMapping("/{id}")
-  public ResponseEntity<String> delete(@PathVariable int id) {
-    ResponseEntity<String> response;
-    if (removeBookFromCollection(id)) {
-      response = new ResponseEntity<>(HttpStatus.OK);
-    } else {
-      response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+  public ResponseEntity<Void> deleteBook(@PathVariable Integer id) {
+    if (bookRepository.existsById(id)) {
+      bookRepository.deleteById(id);
+      logger.info("Deleted book with ID: " + id);
+      return ResponseEntity.noContent().build();
     }
-    return response;
+    return ResponseEntity.notFound().build();
   }
-  */
 
   /**
-   * Remove a book from the collection.
+   * Update a book in the collection.
    *
-   * @param id ID of the book to remove
-   * @return True when book with that ID existed and was removed, false otherwise.
+   * @param id          ID of the book to update
+   *                    (must match the ID in the JSON request body)
+   * @param updatedBook New data for the book
+   * @return 200 OK and the updated book on success, 404 Not found if the book was not found
    */
-  /*
-  private boolean removeBookFromCollection(int id) {
-    Book removedBook = books.remove(id);
-    return removedBook != null;
-  }
-  */
-
-  /**
-   * Update a book in the repository.
-   *
-   * @param id   ID of the book to update, from the URL
-   * @param book New book data to store, from request body
-   * @return 200 OK on success, 400 Bad request on error with error message in the response body
-   */
-  /*
   @PutMapping("/{id}")
-  public ResponseEntity<String> update(@PathVariable int id, @RequestBody Book book) {
-    ResponseEntity<String> response;
-    try {
-      updateBook(id, book);
-      response = new ResponseEntity<>(HttpStatus.OK);
-    } catch (Exception e) {
-      response = new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-    }
-
-    return response;
+  public ResponseEntity<Book> updateBook(@PathVariable Integer id, @RequestBody Book updatedBook) {
+    return bookRepository.findById(id)
+        .map(existingBook -> {
+          existingBook.setId(updatedBook.getId());
+          existingBook.setTitle(updatedBook.getTitle());
+          existingBook.setYear(updatedBook.getYear());
+          existingBook.setNumberOfPages(updatedBook.getNumberOfPages());
+          bookRepository.save(existingBook);
+          logger.info("Updated book with ID: " + id);
+          return ResponseEntity.ok(existingBook);
+        })
+        .orElseGet(() -> ResponseEntity.notFound().build());
   }
-  */
-
-  /**
-   * Search through the book collection, find the book with given ID.
-   *
-   * @param id Book ID
-   * @return Book or null if not found
-   */
-  /*
-  private Book findBookById(Integer id) {
-    return books.get(id);
-  }
-  */
-
-  /**
-   * Add a new book to the collection. Note: ID will be auto-generated, the original ID will
-   * not be used!
-   *
-   * @param book The book to add
-   * @return the ID of the added book
-   * @throws IllegalArgumentException When the provided book is not valid
-   */
-  /*
-  private int addBookToCollection(Book book) throws IllegalArgumentException {
-    if (!book.isValid()) {
-      throw new IllegalArgumentException("Book is invalid");
-    }
-    int id = createNewId();
-    books.put(id, new Book(id, book.title(), book.year(), book.numberOfPages()));
-    return id;
-  }
-   */
-
-  /**
-   * Try to update a book with given ID. The book.id must match the id.
-   *
-   * @param id   ID of the book
-   * @param book The updated book data
-   * @throws IllegalArgumentException If something goes wrong.
-   *                                  Error message can be used in HTTP response.
-   */
-  /*
-  private void updateBook(int id, Book book) throws IllegalArgumentException {
-    Book existingBook = findBookById(id);
-    if (existingBook == null) {
-      throw new IllegalArgumentException("No book with id " + id + " found");
-    }
-    if (book == null || !book.isValid()) {
-      throw new IllegalArgumentException("Wrong data in request body");
-    }
-    if (book.id() != id) {
-      throw new IllegalArgumentException(
-          "Book ID in the URL does not match the ID in JSON data (response body)");
-    }
-
-    books.put(id, book);
-  }
-   */
 }
