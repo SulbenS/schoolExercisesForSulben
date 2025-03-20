@@ -1,0 +1,13 @@
+----------------------------------------------------------------
+Wed Mar 19 13:29:19 CET 2025:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.17.1.0 - (1913217): instance a816c00e-0195-ae61-2f66-000002429ea8 
+on database directory memory:C:\Users\Sivert\Skole\semester 4\ApplikasjonOgWeb\felles\schoolExercisesForSulben\IDATA2306Applikasjonsutvikling\Exercises\weekEleven\secondTask\ex11.2-monolith-with-data\local with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@76ed5528 
+Loaded from file:/C:/Users/Sivert/.m2/repository/org/apache/derby/derby/10.17.1.0/derby-10.17.1.0.jar
+java.vendor=Oracle Corporation
+java.runtime.version=21.0.2+13-58
+user.dir=C:\Users\Sivert\Skole\semester 4\ApplikasjonOgWeb\felles\schoolExercisesForSulben\IDATA2306Applikasjonsutvikling\Exercises\weekEleven\secondTask\ex11.2-monolith-with-data
+os.name=Windows 11
+os.arch=amd64
+os.version=10.0
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''
