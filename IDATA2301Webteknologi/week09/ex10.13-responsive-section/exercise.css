@@ -1,0 +1,32 @@
+/* Put your styles here */
+/* Default styles for larger screens */
+#about img {
+  width: 100%;
+  max-width: 600px;
+}
+
+/* Styles for screens less than 1040px */
+@media (max-width: 1040px) {
+  #about img {
+    max-width: 400px;
+  }
+}
+
+/* Styles for screens less than 600px */
+@media (max-width: 900px) {
+  section#about {
+    display: flex;
+    flex-direction: column-reverse;
+    grid-template-rows: 52rem 1fr;
+    margin-top: 4rem;
+    grid-gap: 4rem;
+    background-color: #024468;
+    color: white;
+    align-items: center;
+    justify-items: center;
+  }
+
+  #info h1 {
+    font-size: 3.2rem;
+  }
+}

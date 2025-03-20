@@ -1,0 +1,48 @@
+/* Put your styles here */
+/* Default styles for larger screens */
+#product-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-gap: 2rem;
+  margin: auto;
+  justify-items: center;
+}
+
+.card {
+  width: 25rem;
+  height: 40rem;
+  margin: 4rem 2rem;
+  border: 1px dashed darkgray;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 0 1rem 0 lightgray;
+  transition: 0.2s;
+}
+
+/* Styles for smaller screens */
+@media (max-width: 1200px) {
+  #product-container {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  #product-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  #product-container {
+    grid-template-columns: 1fr;
+  }
+
+  #info h1 {
+    visibility: hidden;
+  }
+
+  #info h1::after {
+    content: "Shop";
+    visibility: visible;
+  }
+}

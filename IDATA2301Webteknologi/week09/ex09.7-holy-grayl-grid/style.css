@@ -1,0 +1,52 @@
+#page {
+  display: grid;
+  grid-template-columns: 20% 1fr 20%;
+  grid-template-rows: auto 3fr auto;
+  grid-template-areas:
+    "header header header"
+    "left center right"
+    "footer footer footer";
+  height: 100vh;
+  margin: 0;
+}
+
+#header {
+  grid-area: header;
+  align-self: start;
+  justify-self: stretch;
+  justify-items: center;
+  background-color: #dc9494;
+}
+
+#left {
+  grid-area: left;
+  align-self: center;
+  justify-self: stretch;
+  background-color: #487a7c;
+}
+
+#center {
+  grid-area: center;
+  align-self: center;
+  justify-self: stretch;
+  background-color: #bf78cf;
+}
+
+#right {
+  grid-area: right;
+  align-self: center;
+  justify-self: stretch;
+  background-color: #55875b;
+}
+
+#left, #center, #right {
+  align-self: stretch;
+}
+
+#footer {
+  grid-area: footer;
+  align-self: end;
+  justify-self: stretch;
+  justify-items: center;
+  background-color: #6e6a40;
+}

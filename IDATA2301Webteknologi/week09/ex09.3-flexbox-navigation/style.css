@@ -1,0 +1,29 @@
+#topPart {
+  display: flex;
+  flex-direction: row;
+  justify-items: start;
+  justify-content: space-between;
+  margin: 0;
+  padding: 0;
+  background-color: #1b1b20;
+}
+
+* {
+  margin: 0;
+}
+
+#topPart img {
+  width: 100px; /* Adjust the width as needed */
+  height: auto; /* Maintain aspect ratio */
+  padding: 1% 2% 1% 2%;
+
+}
+
+#list {
+  display: flex;
+  flex-direction: row;
+  gap: 50px;
+  padding: 1%;
+  color: white;
+  list-style: none;
+}

@@ -1,4 +1,4 @@
-package no.ntnu.crudrest;
+package no.ntnu.crudrest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;

@@ -1,7 +1,8 @@
-package no.ntnu.crudrest;
+package no.ntnu.crudrest.controller;
 
-import java.util.Map;
 import java.util.Optional;
+import no.ntnu.crudrest.model.Author;
+import no.ntnu.crudrest.repository.AuthorRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
